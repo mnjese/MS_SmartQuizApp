@@ -8,6 +8,7 @@ import com.example.quizapp.data.model.WrongAnswer
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class WrongAnswerViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -19,4 +20,11 @@ class WrongAnswerViewModel(application: Application) : AndroidViewModel(applicat
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun deleteWrongAnswer(wrongAnswer: WrongAnswer) {
+        viewModelScope.launch {
+            quizDao.deleteWrongAnswer(wrongAnswer)
+        }
+    }
+
 }

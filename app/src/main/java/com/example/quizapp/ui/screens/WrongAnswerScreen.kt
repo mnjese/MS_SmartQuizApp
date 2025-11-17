@@ -13,9 +13,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +58,11 @@ fun WrongAnswerScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(wrongAnswerList) { item ->
-                    WrongAnswerItemCard(item = item)
+                    WrongAnswerItemCard(
+                        item = item,
+                        // 3. [추가] 삭제 버튼 클릭 시 ViewModel 함수 호출
+                        onDeleteClick = { viewModel.deleteWrongAnswer(wrongAnswer = item) }
+                    )
                 }
             }
         }
@@ -62,18 +71,37 @@ fun WrongAnswerScreen(
 
 // 오답 아이템을 표시할 카드 Composable
 @Composable
-fun WrongAnswerItemCard(item: WrongAnswer) {
+fun WrongAnswerItemCard(item: WrongAnswer, onDeleteClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 문제
-            Text(
-                text = "Q. ${item.questionText}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                // 문제 (weight(1f)로 공간 차지)
+                Text(
+                    text = "Q. ${item.questionText}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f) // 텍스트가 공간을 차지
+                )
+
+                // 삭제 아이콘 버튼
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.padding(start = 8.dp) // 문제와의 간격
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "오답 삭제",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
 
             // 4지선다 (선택한 답과 정답을 강조)
             item.options.forEachIndexed { index, option ->

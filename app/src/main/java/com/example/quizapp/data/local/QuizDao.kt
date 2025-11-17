@@ -1,6 +1,7 @@
 package com.example.quizapp.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -23,4 +24,7 @@ interface QuizDao {
 
     @Query("SELECT * FROM wrong_answer_table ORDER BY id DESC")
     fun getAllWrongAnswers(): Flow<List<WrongAnswer>>
+
+    @Delete
+    suspend fun deleteWrongAnswer(wrongAnswer: WrongAnswer)
 }
