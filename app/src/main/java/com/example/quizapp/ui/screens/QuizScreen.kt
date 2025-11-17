@@ -10,6 +10,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,13 +27,21 @@ fun QuizScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentQuestion = uiState.currentQuestion
 
+    // 퀴즈 종료 상태 감지
+    LaunchedEffect(uiState.isQuizFinished) {
+        if (uiState.isQuizFinished) {
+            // 결과 화면으로 이동
+            onNavigateToResult()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween // 콘텐츠를 위아래로 분산
     ) {
-        if (currentQuestion != null) {
+        if (currentQuestion != null && !uiState.isQuizFinished) {
             // 상단: 질문 텍스트
             Text(
                 text = currentQuestion.questionText,
@@ -86,9 +95,15 @@ fun QuizScreen(
                     .fillMaxWidth()
                     .padding(top = 24.dp)
             ) {
-                Text("다음")
+                // 4. 마지막 문제일 때 버튼 텍스트 변경 (선택적)
+                val buttonText = if (uiState.currentQuestionIndex == uiState.totalQuestions - 1) {
+                    "결과 보기"
+                } else {
+                    "다음"
+                }
+                Text(buttonText)
             }
-        } else {
+        } else if (currentQuestion == null) {
             // 로딩 중... (또는 에러)
             Text(text = "문제 로딩 중...")
         }
