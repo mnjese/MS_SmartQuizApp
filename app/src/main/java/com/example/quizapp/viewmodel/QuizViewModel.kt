@@ -37,7 +37,7 @@ class QuizViewModel(
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
-    // 질문 목록을 저장할 변수 추가
+    // 질문 목록을 저장할 변수
     private var questionList: List<Question> = emptyList()
 
     init {
@@ -110,11 +110,13 @@ class QuizViewModel(
         isLastCorrect: Boolean
     ) {
         viewModelScope.launch {
+            val topicName: String = DummyData.topics.find { it.id == topicId }?.name ?: "알 수 없는 주제"
             // 랭킹 저장
             val rankingItem = RankingItem(
                 score = finalScore,
                 totalQuestions = questionList.size,
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                topicName = topicName
             )
             quizDao.insertRanking(rankingItem)
 

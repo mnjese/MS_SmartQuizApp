@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.example.quizapp.data.model.RankingItem
 import com.example.quizapp.data.model.WrongAnswer
 
-@Database(entities = [RankingItem::class, WrongAnswer::class], version = 1, exportSchema = false)
+@Database(entities = [RankingItem::class, WrongAnswer::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 

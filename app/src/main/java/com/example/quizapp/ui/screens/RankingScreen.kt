@@ -94,6 +94,13 @@ fun RankingItemCard(rank: Int, item: RankingItem) {
                     text = "점수: ${item.score} / ${item.totalQuestions}",
                     style = MaterialTheme.typography.bodyLarge
                 )
+                //주제 이름 표시
+                Text(
+                    text = item.topicName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(
                     text = formatDate(item.timestamp), // 4. 날짜 포맷팅
                     style = MaterialTheme.typography.bodySmall,

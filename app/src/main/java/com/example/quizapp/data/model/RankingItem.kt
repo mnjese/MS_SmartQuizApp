@@ -9,5 +9,6 @@ data class RankingItem(
     val id: Int = 0,
     val score: Int, // 맞힌 개수
     val totalQuestions: Int, // 총 문제 수
-    val timestamp: Long // 저장된 시간 (날짜)
+    val timestamp: Long, // 저장된 시간 (날짜)
+    val topicName: String // 주제
 )
