@@ -54,11 +54,8 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = "quiz/{topicId}",
                             arguments = listOf(navArgument("topicId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            // 전달받은 topicId를 Int로 추출
-                            val topicId = backStackEntry.arguments?.getInt("topicId") ?: 1 // 기본값 1
+                        ) {
                             QuizScreen(
-                                topicId = topicId, // QuizScreen에 전달
                                 onNavigateToResult = {
                                     navController.navigate("result") {
                                         popUpTo("main")

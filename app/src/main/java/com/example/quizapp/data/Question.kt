@@ -3,7 +3,7 @@ package com.example.quizapp.data
 import com.example.quizapp.data.model.Question
 import com.example.quizapp.data.model.QuizTopic
 
-object DummyData {
+object Question {
 
     val topics = listOf(
         QuizTopic(1, "일반 상식"),
