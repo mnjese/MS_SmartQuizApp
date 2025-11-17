@@ -42,12 +42,23 @@ fun QuizScreen(
         verticalArrangement = Arrangement.SpaceBetween // 콘텐츠를 위아래로 분산
     ) {
         if (currentQuestion != null && !uiState.isQuizFinished) {
-            // 상단: 질문 텍스트
-            Text(
-                text = currentQuestion.questionText,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            // 상단: 질문 텍스트 & 번호
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "${uiState.currentQuestionIndex + 1} / ${uiState.totalQuestions}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .align(Alignment.End) // 오른쪽 정렬
+                        .padding(bottom = 8.dp)
+                )
+                // 문제 텍스트
+                Text(
+                    text = currentQuestion.questionText,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+            }
 
             // 중단: 4지선다
             Column(
