@@ -1,10 +1,15 @@
 package com.example.quizapp.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.data.DummyData
+import com.example.quizapp.data.local.AppDatabase
+import com.example.quizapp.data.local.QuizDao
 import com.example.quizapp.data.model.Question
+import com.example.quizapp.data.model.RankingItem
+import com.example.quizapp.data.model.WrongAnswer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,14 +23,16 @@ data class QuizUiState(
     val selectedAnswerIndex: Int? = null,  // 사용자가 선택한 답 (null = 아직 선택 안 함)
     val score: Int = 0,                    // 현재 점수
     val isQuizFinished: Boolean = false,   // 퀴즈가 끝났는지 여부
-    val wrongAnswers: List<Question> = emptyList() // 오답 목록
+    val wrongAnswers: Map<Question, Int> = emptyMap() // 오답 목록
 )
 
 class QuizViewModel(
+    application: Application,
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val topicId: Int = checkNotNull(savedStateHandle["topicId"])
+    private val quizDao: QuizDao = AppDatabase.getDatabase(application).quizDao()
 
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
@@ -71,7 +78,7 @@ class QuizViewModel(
         val newWrongAnswers = if (isCorrect) {
             currentState.wrongAnswers
         } else {
-            currentState.wrongAnswers + currentQuestion // 틀린 문제 추가
+            currentState.wrongAnswers + (currentQuestion to selectedIndex) // 틀린 문제 추가
         }
 
         // 다음 문제 인덱스 계산
@@ -80,14 +87,7 @@ class QuizViewModel(
         // 퀴즈가 끝났는지 확인
         if (nextQuestionIndex >= questionList.size) {
             // 퀴즈 종료
-            _uiState.update {
-                it.copy(
-                    score = newScore,
-                    isQuizFinished = true,
-                    wrongAnswers = newWrongAnswers,
-                    selectedAnswerIndex = null // 선택 상태 초기화
-                )
-            }
+            saveResults(newScore, newWrongAnswers, selectedIndex, isCorrect)
         } else {
             // 다음 문제로 이동
             _uiState.update {
@@ -97,6 +97,49 @@ class QuizViewModel(
                     score = newScore,
                     wrongAnswers = newWrongAnswers,
                     selectedAnswerIndex = null // 선택 상태 초기화
+                )
+            }
+        }
+    }
+
+    // DB 저장 함수
+    private fun saveResults(
+        finalScore: Int,
+        wrongAnswers: Map<Question, Int>,
+        lastAnswerIndex: Int,
+        isLastCorrect: Boolean
+    ) {
+        viewModelScope.launch {
+            // 랭킹 저장
+            val rankingItem = RankingItem(
+                score = finalScore,
+                totalQuestions = questionList.size,
+                timestamp = System.currentTimeMillis()
+            )
+            quizDao.insertRanking(rankingItem)
+
+            // 오답 노트 저장
+            val currentQuestion = _uiState.value.currentQuestion ?: return@launch
+            val finalWrongAnswers = if (isLastCorrect) { wrongAnswers } else {
+                wrongAnswers + (currentQuestion to lastAnswerIndex)
+            }
+            finalWrongAnswers.forEach { (question, userSelectedIndex) ->
+                val wrongAnswerEntry = WrongAnswer(
+                    questionText = question.questionText,
+                    options = question.options,
+                    correctAnswerIndex = question.correctAnswerIndex,
+                    selectedAnswerIndex = userSelectedIndex // 저장해둔 오답 인덱스 사용
+                )
+                quizDao.insertWrongAnswer(wrongAnswerEntry)
+            }
+
+            // 저장이 완료된 후, 퀴즈 종료 신호 전송
+            _uiState.update {
+                it.copy(
+                    score = finalScore,
+                    isQuizFinished = true,
+                    wrongAnswers = finalWrongAnswers,
+                    selectedAnswerIndex = null
                 )
             }
         }
