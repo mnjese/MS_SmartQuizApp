@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,31 +33,52 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class) // 2. FilterChip을 위해 추가
 @Composable
 fun RankingScreen(
     viewModel: RankingViewModel = viewModel()
 ) {
-    // 랭킹 리스트 구독
-    val rankingList by viewModel.rankingList.collectAsState()
+    val rankingList by viewModel.filteredRankingList.collectAsState()
+    val selectedTopic by viewModel.selectedTopic.collectAsState()
+    val topics = viewModel.topicList
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(top = 16.dp), // 상단 패딩만
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "랭킹",
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // 랭킹 목록 표시
+        // 주제 필터 버튼 (가로 스크롤)
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp), // 좌우 패딩
+            horizontalArrangement = Arrangement.spacedBy(8.dp) // 버튼 사이 간격
+        ) {
+            items(topics) { topicName ->
+                FilterChip(
+                    selected = (topicName == selectedTopic),
+                    onClick = { viewModel.selectTopic(topicName) },
+                    label = { Text(topicName) }
+                )
+            }
+        }
+
+        // 5. [수정] 랭킹 목록 (padding 수정)
         if (rankingList.isEmpty()) {
-            Text("아직 랭킹 기록이 없습니다.")
+            Text("해당 주제의 랭킹 기록이 없습니다.")
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp), // 좌우 패딩만
                 contentPadding = PaddingValues(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
