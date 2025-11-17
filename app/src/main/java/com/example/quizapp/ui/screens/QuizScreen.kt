@@ -21,7 +21,7 @@ import com.example.quizapp.viewmodel.QuizViewModel
 
 @Composable
 fun QuizScreen(
-    onNavigateToResult: () -> Unit,
+    onNavigateToResult: (Int, Int) -> Unit,
     viewModel: QuizViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -31,7 +31,7 @@ fun QuizScreen(
     LaunchedEffect(uiState.isQuizFinished) {
         if (uiState.isQuizFinished) {
             // 결과 화면으로 이동
-            onNavigateToResult()
+            onNavigateToResult(uiState.score, uiState.totalQuestions)
         }
     }
 

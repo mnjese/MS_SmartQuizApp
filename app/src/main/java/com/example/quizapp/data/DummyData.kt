@@ -38,7 +38,7 @@ object DummyData {
         ),
         Question(
             id = 202,
-            questionText = "태양계의 중심 행성은?",
+            questionText = "태양계의 중심 천체는?",
             options = listOf("지구", "태양", "화성", "목성"),
             correctAnswerIndex = 1,
             topicId = 2

@@ -28,20 +28,17 @@ class MainActivity : ComponentActivity() {
             QuizAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    // 1. Navigation Controller 생성
                     val navController = rememberNavController()
 
-                    // 2. Navigation Host 설정
                     NavHost(
                         navController = navController,
                         startDestination = "main", // 시작 화면을 "main"으로 설정
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        // 3. 각 화면을 "경로(route)"와 Composable 함수로 연결
+                        // 각 화면을 "경로(route)"와 Composable 함수로 연결
 
                         composable(route = "main") {
                             MainScreen(
-                                // 람다가 Int(topicId)를 받도록 수정
                                 onNavigateToQuiz = { topicId ->
                                     // "quiz/1", "quiz/2" 와 같은 경로로 이동
                                     navController.navigate("quiz/$topicId")
@@ -56,19 +53,28 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("topicId") { type = NavType.IntType })
                         ) {
                             QuizScreen(
-                                onNavigateToResult = {
-                                    navController.navigate("result") {
+                                onNavigateToResult = { score, totalQuestions ->
+                                    navController.navigate("result/$score/$totalQuestions") {
                                         popUpTo("main")
                                     }
                                 }
                             )
                         }
 
-                        composable(route = "result") {
+                        composable(
+                            route = "result/{score}/{totalQuestions}",
+                            arguments = listOf(
+                                navArgument("score") { type = NavType.IntType },
+                                navArgument("totalQuestions") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
+                            val score = backStackEntry.arguments?.getInt("score") ?: 0
+                            val totalQuestions = backStackEntry.arguments?.getInt("totalQuestions") ?: 0
                             ResultScreen(
+                                score = score,
+                                totalQuestions = totalQuestions,
                                 onNavigateToMain = {
                                     navController.navigate("main") {
-                                        // 결과 화면도 뒤로가기 스택에서 제거
                                         popUpTo("main")
                                     }
                                 }

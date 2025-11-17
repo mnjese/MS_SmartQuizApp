@@ -67,7 +67,7 @@ class QuizViewModel(
 
         // 정답 채점
         val isCorrect = (currentQuestion.correctAnswerIndex == selectedIndex)
-        val newScore = if (isCorrect) currentState.score + 10 else currentState.score
+        val newScore = if (isCorrect) currentState.score + 1 else currentState.score
         val newWrongAnswers = if (isCorrect) {
             currentState.wrongAnswers
         } else {
