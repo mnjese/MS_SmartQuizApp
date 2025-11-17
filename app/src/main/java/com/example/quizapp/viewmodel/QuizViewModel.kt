@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.data.DummyData
+import com.example.quizapp.data.QuizResultHolder
 import com.example.quizapp.data.local.AppDatabase
 import com.example.quizapp.data.local.QuizDao
 import com.example.quizapp.data.model.Question
@@ -39,6 +40,8 @@ class QuizViewModel(
 
     // 질문 목록을 저장할 변수
     private var questionList: List<Question> = emptyList()
+
+    private val userAnswerMap = mutableMapOf<Int, Int>()
 
     init {
         loadQuestions()
@@ -86,8 +89,10 @@ class QuizViewModel(
 
         // 퀴즈가 끝났는지 확인
         if (nextQuestionIndex >= questionList.size) {
-            // 퀴즈 종료
-            saveResults(newScore, newWrongAnswers, selectedIndex, isCorrect)
+            _uiState.value.currentQuestion?.let {
+                userAnswerMap[it.id] = selectedIndex
+            }
+            saveResults(newScore, userAnswerMap)
         } else {
             // 다음 문제로 이동
             _uiState.update {
@@ -105,9 +110,7 @@ class QuizViewModel(
     // DB 저장 함수
     private fun saveResults(
         finalScore: Int,
-        wrongAnswers: Map<Question, Int>,
-        lastAnswerIndex: Int,
-        isLastCorrect: Boolean
+        userAnswers: Map<Int, Int>
     ) {
         viewModelScope.launch {
             val topicName: String = DummyData.topics.find { it.id == topicId }?.name ?: "알 수 없는 주제"
@@ -121,26 +124,33 @@ class QuizViewModel(
             quizDao.insertRanking(rankingItem)
 
             // 오답 노트 저장
-            val currentQuestion = _uiState.value.currentQuestion ?: return@launch
-            val finalWrongAnswers = if (isLastCorrect) { wrongAnswers } else {
-                wrongAnswers + (currentQuestion to lastAnswerIndex)
+            val finalWrongAnswers = mutableMapOf<Question, Int>()
+            questionList.forEach { question ->
+                val userAnswerIndex = userAnswers[question.id]
+                if (userAnswerIndex != null && userAnswerIndex != question.correctAnswerIndex) {
+                    // 틀린 경우
+                    finalWrongAnswers[question] = userAnswerIndex
+
+                    // DB에 저장
+                    val wrongAnswerEntry = WrongAnswer(
+                        questionText = question.questionText,
+                        options = question.options,
+                        correctAnswerIndex = question.correctAnswerIndex,
+                        selectedAnswerIndex = userAnswerIndex
+                    )
+                    quizDao.insertWrongAnswer(wrongAnswerEntry)
+                }
             }
-            finalWrongAnswers.forEach { (question, userSelectedIndex) ->
-                val wrongAnswerEntry = WrongAnswer(
-                    questionText = question.questionText,
-                    options = question.options,
-                    correctAnswerIndex = question.correctAnswerIndex,
-                    selectedAnswerIndex = userSelectedIndex // 저장해둔 오답 인덱스 사용
-                )
-                quizDao.insertWrongAnswer(wrongAnswerEntry)
-            }
+
+            QuizResultHolder.questions = questionList
+            QuizResultHolder.userAnswers = userAnswers.toMap()
 
             // 저장이 완료된 후, 퀴즈 종료 신호 전송
             _uiState.update {
                 it.copy(
                     score = finalScore,
                     isQuizFinished = true,
-                    wrongAnswers = finalWrongAnswers,
+                    //wrongAnswers = finalWrongAnswers,
                     selectedAnswerIndex = null
                 )
             }
