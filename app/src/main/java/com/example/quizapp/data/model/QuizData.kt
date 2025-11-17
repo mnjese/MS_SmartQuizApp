@@ -1,10 +1,9 @@
-package com.example.quizapp.data
+package com.example.quizapp.data.model
 
 // 퀴즈 주제 (예: 과학, 영화)
 data class QuizTopic(
     val id: Int,
     val name: String,
-    val description: String
     // val icon: Int // (선택적) 아이콘 리소스 ID
 )
 

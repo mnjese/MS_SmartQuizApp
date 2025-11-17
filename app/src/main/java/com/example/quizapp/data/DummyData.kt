@@ -1,14 +1,14 @@
 package com.example.quizapp.data
 
-import com.example.quizapp.data.Question
-import com.example.quizapp.data.QuizTopic
+import com.example.quizapp.data.model.Question
+import com.example.quizapp.data.model.QuizTopic
 
 object DummyData {
 
     val topics = listOf(
-        QuizTopic(1, "일반 상식", "다양한 분야의 상식 퀴즈"),
-        QuizTopic(2, "과학", "우주와 생명에 대한 신비"),
-        QuizTopic(3, "영화", "명대사와 영화 속 이야기")
+        QuizTopic(1, "일반 상식"),
+        QuizTopic(2, "과학"),
+        QuizTopic(3, "영화")
     )
 
     val questions = listOf(
