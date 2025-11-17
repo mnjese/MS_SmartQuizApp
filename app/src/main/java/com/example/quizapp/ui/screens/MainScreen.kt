@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.quizapp.data.Question
+import com.example.quizapp.data.DummyData
 import com.example.quizapp.data.model.QuizTopic
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,7 +19,7 @@ fun MainScreen(
     onNavigateToRanking: () -> Unit,
     onNavigateToWrongAnswer: () -> Unit
 ) {
-    val topics = Question.topics
+    val topics = DummyData.topics
     // 1. 현재 선택된 주제 ID를 기억하는 상태 (null = 선택 안 함)
     var selectedTopicId by remember { mutableStateOf<Int?>(null) }
 
