@@ -5,8 +5,9 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun QuizScreen(
-    onNavigateToResult: () -> Unit // 결과 화면으로 이동 요청
+    topicId: Int, // topicId 인자 추가
+    onNavigateToResult: () -> Unit
 ) {
-    Text(text = "퀴즈 화면 (QuizScreen)")
-
+    // 전달받은 ID를 표시 (테스트용)
+    Text(text = "퀴즈 화면 (Topic ID: $topicId)")
 }

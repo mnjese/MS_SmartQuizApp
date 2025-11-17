@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.quizapp.ui.screens.MainScreen
 import com.example.quizapp.ui.screens.QuizScreen
 import com.example.quizapp.ui.screens.RankingScreen
@@ -39,18 +41,26 @@ class MainActivity : ComponentActivity() {
 
                         composable(route = "main") {
                             MainScreen(
-                                // MainScreen이 요청한 람다를 실제 탐색 코드로 구현
-                                onNavigateToQuiz = { navController.navigate("quiz") },
+                                // 람다가 Int(topicId)를 받도록 수정
+                                onNavigateToQuiz = { topicId ->
+                                    // "quiz/1", "quiz/2" 와 같은 경로로 이동
+                                    navController.navigate("quiz/$topicId")
+                                },
                                 onNavigateToRanking = { navController.navigate("ranking") },
                                 onNavigateToWrongAnswer = { navController.navigate("wrong_answer") }
                             )
                         }
 
-                        composable(route = "quiz") {
+                        composable(
+                            route = "quiz/{topicId}",
+                            arguments = listOf(navArgument("topicId") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            // 전달받은 topicId를 Int로 추출
+                            val topicId = backStackEntry.arguments?.getInt("topicId") ?: 1 // 기본값 1
                             QuizScreen(
+                                topicId = topicId, // QuizScreen에 전달
                                 onNavigateToResult = {
                                     navController.navigate("result") {
-                                        // 퀴즈 화면은 뒤로가기 스택에서 제거
                                         popUpTo("main")
                                     }
                                 }
