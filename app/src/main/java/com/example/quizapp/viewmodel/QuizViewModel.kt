@@ -63,6 +63,9 @@ class QuizViewModel(
 
     // 사용자가 답을 선택했을 때 호출할 함수
     fun onAnswerSelected(index: Int) {
+        _uiState.value.currentQuestion?.let {
+            userAnswerMap[it.id] = index
+        }
         _uiState.update { currentState ->
             currentState.copy(
                 selectedAnswerIndex = index
@@ -83,6 +86,7 @@ class QuizViewModel(
         } else {
             currentState.wrongAnswers + (currentQuestion to selectedIndex) // 틀린 문제 추가
         }
+
 
         // 다음 문제 인덱스 계산
         val nextQuestionIndex = currentState.currentQuestionIndex + 1
@@ -113,8 +117,8 @@ class QuizViewModel(
         userAnswers: Map<Int, Int>
     ) {
         viewModelScope.launch {
-            val topicName: String = DummyData.topics.find { it.id == topicId }?.name ?: "알 수 없는 주제"
             // 랭킹 저장
+            val topicName = DummyData.topics.find { it.id == topicId }?.name ?: "알 수 없는 주제"
             val rankingItem = RankingItem(
                 score = finalScore,
                 totalQuestions = questionList.size,
@@ -124,33 +128,28 @@ class QuizViewModel(
             quizDao.insertRanking(rankingItem)
 
             // 오답 노트 저장
-            val finalWrongAnswers = mutableMapOf<Question, Int>()
             questionList.forEach { question ->
                 val userAnswerIndex = userAnswers[question.id]
                 if (userAnswerIndex != null && userAnswerIndex != question.correctAnswerIndex) {
-                    // 틀린 경우
-                    finalWrongAnswers[question] = userAnswerIndex
-
-                    // DB에 저장
                     val wrongAnswerEntry = WrongAnswer(
                         questionText = question.questionText,
                         options = question.options,
                         correctAnswerIndex = question.correctAnswerIndex,
                         selectedAnswerIndex = userAnswerIndex
                     )
-                    quizDao.insertWrongAnswer(wrongAnswerEntry)
+                    quizDao.insertWrongAnswer(wrongAnswerEntry) // DB에 저장
                 }
             }
 
+            // 결과 화면에 데이터 전달
             QuizResultHolder.questions = questionList
             QuizResultHolder.userAnswers = userAnswers.toMap()
 
-            // 저장이 완료된 후, 퀴즈 종료 신호 전송
+            // 퀴즈 종료 신호
             _uiState.update {
                 it.copy(
                     score = finalScore,
                     isQuizFinished = true,
-                    //wrongAnswers = finalWrongAnswers,
                     selectedAnswerIndex = null
                 )
             }
