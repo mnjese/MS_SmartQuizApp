@@ -14,6 +14,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +38,7 @@ import com.example.quizapp.viewmodel.WrongAnswerViewModel
  */
 @Composable
 fun WrongAnswerScreen(
+    onBack: () -> Unit,
     viewModel: WrongAnswerViewModel = viewModel()
 ) {
     // ViewModel로부터 오답 리스트를 DB 변경에 따라 실시간으로 구독합니다.
@@ -49,6 +51,9 @@ fun WrongAnswerScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        IconButton(onClick = onBack) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+        }
         // 화면 타이틀
         Text(
             text = "오답 노트",

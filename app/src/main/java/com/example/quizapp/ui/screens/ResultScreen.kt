@@ -1,5 +1,6 @@
 package com.example.quizapp.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -144,6 +145,10 @@ fun ResultQuestionItem(
     selectedIndex: Int?,
     isCorrect: Boolean
 ) {
+    BackHandler {
+        //뒤로 가기 버튼 비활성화
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         // 사용자가 맞혔는지(isCorrect) 여부에 따라 카드 배경색을 다르게 설정

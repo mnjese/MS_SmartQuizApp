@@ -1,18 +1,24 @@
 package com.example.quizapp.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,12 +35,37 @@ import com.example.quizapp.viewmodel.QuizViewModel
 @Composable
 fun QuizScreen(
     onNavigateToResult: (Int, Int) -> Unit,
+    onNavigateToMain: () -> Unit,
     viewModel: QuizViewModel = viewModel()
 ) {
     // ViewModel의 uiState를 구독하여 상태 변화를 실시간으로 반영합니다.
     val uiState by viewModel.uiState.collectAsState()
     // 현재 화면에 표시할 질문 객체
     val currentQuestion = uiState.currentQuestion
+
+    var showExitDialog: Boolean by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showExitDialog = true
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("퀴즈 종료") },
+            text = { Text("정말 퀴즈를 종료하고 메인 화면으로 돌아가시겠습니까?") },
+            confirmButton = {
+                TextButton(onClick = onNavigateToMain) {
+                    Text("종료")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
 
     // uiState.isQuizFinished 상태가 true로 변경될 때를 감지하는 부수 효과
     LaunchedEffect(uiState.isQuizFinished) {

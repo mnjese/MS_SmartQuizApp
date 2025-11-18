@@ -78,6 +78,11 @@ fun AppNavigation(
                     navController.navigate(Screen.Result.createRoute(score, totalQuestions)) {
                         popUpTo(Screen.Main.route)
                     }
+                },
+                onNavigateToMain = {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Main.route)
+                    }
                 }
             )
         }
@@ -106,12 +111,16 @@ fun AppNavigation(
 
         // 랭킹 화면
         composable(Screen.Ranking.route) {
-            RankingScreen()
+            RankingScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         // 오답 노트 화면
         composable(Screen.WrongAnswer.route) {
-            WrongAnswerScreen()
+            WrongAnswerScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
