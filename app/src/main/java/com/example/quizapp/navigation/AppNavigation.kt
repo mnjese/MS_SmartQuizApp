@@ -1,5 +1,6 @@
 package com.example.quizapp.navigation
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -55,6 +56,8 @@ fun AppNavigation(
     ) {
         // 메인 화면
         composable(Screen.Main.route) {
+            val activity = LocalActivity.current
+
             MainScreen(
                 onNavigateToQuiz = { topicId ->
                     navController.navigate(Screen.Quiz.createRoute(topicId))
@@ -64,6 +67,9 @@ fun AppNavigation(
                 },
                 onNavigateToWrongAnswer = {
                     navController.navigate(Screen.WrongAnswer.route)
+                },
+                onExit = {
+                    activity?.finish()
                 }
             )
         }

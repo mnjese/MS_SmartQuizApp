@@ -1,5 +1,6 @@
 package com.example.quizapp.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -19,19 +20,49 @@ import com.example.quizapp.data.model.QuizTopic
  * @param onNavigateToQuiz 선택된 주제 ID와 함께 퀴즈 화면으로 이동하는 콜백
  * @param onNavigateToRanking 랭킹 화면으로 이동하는 콜백
  * @param onNavigateToWrongAnswer 오답 노트 화면으로 이동하는 콜백
+ * @param onExit 앱을 종료하는 콜백
  */
 @OptIn(ExperimentalMaterial3Api::class) // Card의 onClick을 사용하기 위해 필요
 @Composable
 fun MainScreen(
     onNavigateToQuiz: (Int) -> Unit,
     onNavigateToRanking: () -> Unit,
-    onNavigateToWrongAnswer: () -> Unit
+    onNavigateToWrongAnswer: () -> Unit,
+    onExit: () -> Unit
 ) {
+    var showExitDialog: Boolean by remember { mutableStateOf(false) }
+
+    // 시스템 뒤로가기 → 종료 다이얼로그
+    BackHandler {
+        showExitDialog = true
+    }
+
+    // 종료 확인 팝업
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("앱 종료") },
+            text = { Text("정말 앱을 종료하시겠습니까?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitDialog = false
+                        onExit()
+                    }
+                ) { Text("종료") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
     // 퀴즈 주제 목록을 더미 데이터에서 가져옵니다.
     val topics = DummyData.topics
 
     // 현재 선택된 주제의 ID를 기억하는 상태 변수.
-    // null은 아무것도 선택되지 않았음을 의미합니다.
     var selectedTopicId by remember { mutableStateOf<Int?>(null) }
 
     // 화면 전체를 채우는 세로 배치
@@ -191,5 +222,5 @@ fun TopicCard(
 @Composable
 fun MainScreenPreview() {
     // 프리뷰에서는 실제 탐색 로직이 필요 없으므로 빈 람다({})를 전달합니다.
-    MainScreen({}, {}, {})
+    MainScreen({}, {}, {}, {})
 }
