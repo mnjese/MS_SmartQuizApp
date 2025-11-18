@@ -18,6 +18,15 @@ import com.example.quizapp.data.QuizResultHolder
 import com.example.quizapp.data.model.Question
 import com.example.quizapp.viewmodel.ResultViewModel
 
+/**
+ * 퀴즈가 끝난 후 상세 결과를 보여주는 화면 Composable.
+ * 점수 요약, 예상 랭킹, 풀었던 모든 문제 목록을 표시합니다.
+ *
+ * @param score 최종 맞힌 개수 (점수).
+ * @param totalQuestions 전체 문제 개수.
+ * @param onNavigateToMain 메인 화면으로 돌아가기 버튼 클릭 시 호출될 람다.
+ * @param viewModel 랭킹 목록을 불러와 예상 순위를 계산하기 위한 [ResultViewModel].
+ */
 @Composable
 fun ResultScreen(
     score: Int,
@@ -25,76 +34,94 @@ fun ResultScreen(
     onNavigateToMain: () -> Unit,
     viewModel: ResultViewModel = viewModel()
 ) {
-    // Holder에서 문제 목록과 답안지 가져오기
+    // 1. 임시 저장소(QuizResultHolder)에서 문제 목록과 사용자 답안지를 가져옵니다.
+    // 이 데이터는 QuizViewModel이 퀴즈 종료 직전에 저장한 것입니다.
     val questions = QuizResultHolder.questions
     val userAnswers = QuizResultHolder.userAnswers
 
-    // DB에서 전체 랭킹 가져오기
+    // 2. DB에서 저장된 모든 랭킹 기록을 State로 구독합니다.
     val rankings by viewModel.allRankings.collectAsState()
 
-    // 예상 랭킹 계산
+    // 3. 예상 랭킹을 계산합니다.
+    // (현재 랭킹 목록에서 나보다 점수가 높은 사람의 수 + 1)
+    // QuizViewModel이 DB에 저장을 완료하면 'rankings' Flow가 갱신되어 순위가 계산됩니다.
     val newRank = (rankings.count { it.score > score } + 1)
 
+    // 상세 결과는 스크롤이 필요하므로 LazyColumn을 사용합니다.
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 결과 요약
+        // --- 1. 상단: 결과 요약 ---
         item {
-            Text(
-                text = "퀴즈 결과",
-                style = MaterialTheme.typography.headlineLarge
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "퀴즈 결과",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "총 $totalQuestions 문제 중 $score 문제를 맞혔습니다.",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+                // 맞힌 개수 요약
+                Text(
+                    text = "총 $totalQuestions 문제 중 $score 문제를 맞혔습니다.",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // 예상 랭킹 표시
-            Text(
-                text = "예상 랭킹: $newRank 위",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(32.dp))
+                // 예상 랭킹 표시
+                Text(
+                    text = "예상 랭킹: $newRank 위",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary // 랭킹 강조
+                )
+                Spacer(modifier = Modifier.height(32.dp))
 
-            // 문제 목록 헤더
-            Text(
-                text = "전체 문제 다시보기",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth()
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
-            )
+                // 문제 목록 헤더
+                Text(
+                    text = "전체 문제 다시보기",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth() // 왼쪽 정렬을 위해
+                )
+                // 헤더 구분선
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
+            }
         }
 
-        // 전체 문제 목록
+        // --- 2. 중단: 풀었던 문제 목록 ---
+        // 'questions' 리스트를 순회하며 각 문제에 대한 'ResultQuestionItem'을 생성합니다.
         items(questions) { question ->
+            // 이 문제에 대해 사용자가 선택했던 답안
             val selectedIndex = userAnswers[question.id]
+            // 이 문제를 사용자가 맞혔는지 여부
             val isCorrect = (selectedIndex == question.correctAnswerIndex)
+
             ResultQuestionItem(
                 question = question,
                 selectedIndex = selectedIndex,
                 isCorrect = isCorrect
             )
+            // 아이템 사이 간격
             Spacer(modifier = Modifier.height(12.dp))
         }
 
+        // --- 3. 하단: 메인으로 돌아가기 버튼 ---
         item {
             Button(
                 onClick = {
-                    // Holder 데이터 정리
+                    // [중요] 메인 화면으로 돌아가기 전, 임시 저장소의 데이터를 비웁니다.
+                    // 이렇게 하지 않으면 다음에 다른 퀴즈를 풀고 결과 화면에 왔을 때
+                    // 이전 데이터가 남아있을 수 있습니다.
                     QuizResultHolder.questions = emptyList()
                     QuizResultHolder.userAnswers = emptyMap()
+
+                    // 네비게이션 람다 호출
                     onNavigateToMain()
                 },
                 modifier = Modifier.padding(top = 24.dp)
@@ -105,7 +132,13 @@ fun ResultScreen(
     }
 }
 
-// 결과 화면에서 사용할 문제 아이템 Composable
+/**
+ * 결과 화면에서 풀었던 문제 하나하나를 표시하는 재사용 가능한 카드 Composable.
+ *
+ * @param question 표시할 문제 데이터 [Question].
+ * @param selectedIndex 사용자가 이 문제에 대해 선택했던 답안 인덱스 (선택 안함 = null).
+ * @param isCorrect 사용자가 이 문제를 맞혔는지 여부.
+ */
 @Composable
 fun ResultQuestionItem(
     question: Question,
@@ -114,31 +147,39 @@ fun ResultQuestionItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        // 사용자가 맞혔는지(isCorrect) 여부에 따라 카드 배경색을 다르게 설정
         colors = CardDefaults.cardColors(
-            // 맞았으면 연한 초록색, 틀렸으면 연한 빨간색
             containerColor = if (isCorrect) {
-                Color(0xFFE8F5E9) // Green 50
+                Color(0xFFE8F5E9) // 맞음 (연한 초록)
             } else {
-                Color(0xFFFFEBEE) // Red 50
+                Color(0xFFFFEBEE) // 틀림 (연한 빨강)
             }
         )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
+            // 문제 텍스트
             Text(
                 text = "Q. ${question.questionText}",
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // 4지선다 옵션 목록
             question.options.forEachIndexed { index, option ->
-                val isCorrectAnswer = (index == question.correctAnswerIndex)
-                val isUserSelection = (index == selectedIndex)
+                val isCorrectAnswer = (index == question.correctAnswerIndex) // 이 옵션이 '정답'인가?
+                val isUserSelection = (index == selectedIndex)           // 이 옵션이 '사용자 선택'인가?
 
+                // when문을 사용해 옵션 텍스트의 색상을 결정
                 val color = when {
-                    isCorrectAnswer -> Color(0xFF008000) // 정답 (초록색)
-                    isUserSelection -> Color.Red // 사용자의 오답 (빨간색)
+                    // 1순위: '정답'은 항상 진한 초록색
+                    isCorrectAnswer -> Color(0xFF008000)
+                    // 2순위: '사용자가 선택한 오답'은 빨간색
+                    isUserSelection -> Color.Red
+                    // 3순위: 그 외 (선택 안 된 오답)
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
+
+                // 정답 또는 사용자가 선택한 답은 굵게 표시
                 val fontWeight = if (isCorrectAnswer || isUserSelection) FontWeight.Bold else FontWeight.Normal
 
                 Text(

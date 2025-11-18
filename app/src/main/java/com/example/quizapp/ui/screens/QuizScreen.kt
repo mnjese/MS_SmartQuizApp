@@ -19,32 +19,48 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizapp.viewmodel.QuizViewModel
 
+/**
+ * 퀴즈 문제를 풀이하는 화면 Composable.
+ * ViewModel로부터 현재 문제 상태를 받아 표시하고, 사용자 입력을 ViewModel로 전달합니다.
+ *
+ * @param onNavigateToResult 퀴즈가 모두 종료되었을 때 호출되는 람다.
+ * 최종 점수(맞힌 개수)와 총 문제 개수를 전달합니다.
+ * @param viewModel 퀴즈 로직과 상태를 관리하는 [QuizViewModel].
+ */
 @Composable
 fun QuizScreen(
     onNavigateToResult: (Int, Int) -> Unit,
     viewModel: QuizViewModel = viewModel()
 ) {
+    // ViewModel의 uiState를 구독하여 상태 변화를 실시간으로 반영합니다.
     val uiState by viewModel.uiState.collectAsState()
+    // 현재 화면에 표시할 질문 객체
     val currentQuestion = uiState.currentQuestion
 
-    // 퀴즈 종료 상태 감지
+    // uiState.isQuizFinished 상태가 true로 변경될 때를 감지하는 부수 효과
     LaunchedEffect(uiState.isQuizFinished) {
         if (uiState.isQuizFinished) {
-            // 결과 화면으로 이동
+            // 퀴즈가 종료되면, 점수와 총 문제 수를 가지고 결과 화면으로 이동합니다.
             onNavigateToResult(uiState.score, uiState.totalQuestions)
         }
     }
 
+    // 화면 전체 레이아웃 (세로 배치)
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween // 콘텐츠를 위아래로 분산
+        // 컴포넌트들을 화면 상단, 중단, 하단에 분산 배치합니다.
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // 현재 문제가 존재하고 퀴즈가 끝나지 않았을 때만 UI를 표시합니다.
         if (currentQuestion != null && !uiState.isQuizFinished) {
-            // 상단: 질문 텍스트 & 번호
+
+            // 상단: 퀴즈 진행도 및 문제 텍스트
             Column(modifier = Modifier.fillMaxWidth()) {
+                // 퀴즈 진행도 (예: "1 / 10")
                 Text(
+                    // currentQuestionIndex는 0부터 시작하므로 +1
                     text = "${uiState.currentQuestionIndex + 1} / ${uiState.totalQuestions}",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -52,7 +68,7 @@ fun QuizScreen(
                         .align(Alignment.End) // 오른쪽 정렬
                         .padding(bottom = 8.dp)
                 )
-                // 문제 텍스트
+                // 현재 문제 텍스트
                 Text(
                     text = currentQuestion.questionText,
                     style = MaterialTheme.typography.headlineMedium,
@@ -60,33 +76,35 @@ fun QuizScreen(
                 )
             }
 
-            // 중단: 4지선다
+            // 중단: 4지선다 선택지 버튼 목록
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 현재 문제의 선택지 목록을 순회하며 버튼을 생성합니다.
                 currentQuestion.options.forEachIndexed { index, optionText ->
+                    // 현재 선택된 답안인지 여부
                     val isSelected = (uiState.selectedAnswerIndex == index)
 
                     Button(
                         onClick = {
-                            // 1. 버튼 클릭 시 ViewModel의 함수 호출
+                            // 버튼 클릭 시 ViewModel에 선택한 인덱스(index)를 알립니다.
                             viewModel.onAnswerSelected(index)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
-                        // 2. 선택 상태에 따라 버튼 색상 변경
+                        // 선택 상태(isSelected)에 따라 버튼의 색상을 동적으로 변경합니다.
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isSelected) {
-                                MaterialTheme.colorScheme.primary
+                                MaterialTheme.colorScheme.primary // 선택됨
                             } else {
-                                MaterialTheme.colorScheme.surfaceVariant
+                                MaterialTheme.colorScheme.surfaceVariant // 기본
                             },
                             contentColor = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimary
+                                MaterialTheme.colorScheme.onPrimary // 선택됨
                             } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.onSurfaceVariant // 기본
                             }
                         )
                     ) {
@@ -95,18 +113,19 @@ fun QuizScreen(
                 }
             }
 
-            // 하단: '다음' 버튼
+            // 하단: '다음' 또는 '결과 보기' 버튼
             Button(
                 onClick = {
-                    viewModel.moveToNextQuestion() // 다음 커밋에서 이 함수를 구현
+                    // 버튼 클릭 시 ViewModel에 다음 문제로 넘어가도록 요청합니다.
+                    viewModel.moveToNextQuestion()
                 },
-                // 3. 답이 선택되었을 때만 활성화
+                // 사용자가 답을 선택했을 때(selectedAnswerIndex != null)만 버튼을 활성화합니다.
                 enabled = (uiState.selectedAnswerIndex != null),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp)
             ) {
-                // 4. 마지막 문제일 때 버튼 텍스트 변경 (선택적)
+                // 마지막 문제인지 여부에 따라 버튼 텍스트를 "결과 보기" 또는 "다음"으로 변경합니다.
                 val buttonText = if (uiState.currentQuestionIndex == uiState.totalQuestions - 1) {
                     "결과 보기"
                 } else {
@@ -114,9 +133,11 @@ fun QuizScreen(
                 }
                 Text(buttonText)
             }
+            // 문제가 로딩 중일 때 (currentQuestion == null)
         } else if (currentQuestion == null) {
-            // 로딩 중... (또는 에러)
             Text(text = "문제 로딩 중...")
         }
+        // 퀴즈가 끝났을 때는 (isQuizFinished == true) LaunchedEffect가
+        // 화면 전환을 처리하므로 여기서는 아무것도 그리지 않습니다.
     }
 }
