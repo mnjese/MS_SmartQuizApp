@@ -184,12 +184,13 @@ class QuizViewModel(
             )
             quizDao.insertRanking(rankingItem)
 
-            // 3) 오답 노트 저장
+            // 3) 오답 노트 저장 (문제당 최대 1건, 다시 틀리면 덮어쓰기)
             questionList.forEach { question ->
                 val userAnswerIndex = userAnswers[question.id]
                 // 사용자가 답을 했고, 그 답이 정답이 아닐 경우만 저장
                 if (userAnswerIndex != null && userAnswerIndex != question.correctAnswerIndex) {
                     val wrongAnswerEntry = WrongAnswer(
+                        questionId = question.id,
                         questionText = question.questionText,
                         options = question.options,
                         correctAnswerIndex = question.correctAnswerIndex,

@@ -16,7 +16,7 @@ import com.example.quizapp.data.model.WrongAnswer
  */
 @Database(
     entities = [RankingItem::class, WrongAnswer::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

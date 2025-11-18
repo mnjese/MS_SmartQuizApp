@@ -37,10 +37,12 @@ interface QuizDao {
 
     /**
      * 틀린 문제를 오답 테이블에 저장합니다.
+     * 같은 문제(questionId)는 한 번만 저장되며,
+     * 다시 틀리면 기존 기록을 덮어씁니다.
      *
      * @param wrongAnswer 저장할 오답 엔티티
      */
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWrongAnswer(wrongAnswer: WrongAnswer)
 
     /**
