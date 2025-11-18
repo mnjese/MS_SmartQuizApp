@@ -16,6 +16,24 @@ import com.example.quizapp.ui.screens.ResultScreen
 import com.example.quizapp.ui.screens.WrongAnswerScreen
 
 /**
+ * 앱의 라우팅 경로를 타입 안전하게 관리하기 위한 Screen 정의.
+ */
+sealed class Screen(val route: String) {
+    object Main : Screen("main")
+
+    object Quiz : Screen("quiz/{topicId}") {
+        fun createRoute(topicId: Int) = "quiz/$topicId"
+    }
+
+    object Result : Screen("result/{score}/{totalQuestions}") {
+        fun createRoute(score: Int, total: Int) = "result/$score/$total"
+    }
+
+    object Ranking : Screen("ranking")
+    object WrongAnswer : Screen("wrong_answer")
+}
+
+/**
  * AppNavigation
  * -------------------------------
  * 분리된 네비게이션 그래프를 관리하는 파일.
@@ -32,33 +50,33 @@ fun AppNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "main",
+        startDestination = Screen.Main.route,
         modifier = Modifier.padding(innerPadding)
     ) {
         // 메인 화면
-        composable("main") {
+        composable(Screen.Main.route) {
             MainScreen(
                 onNavigateToQuiz = { topicId ->
-                    navController.navigate("quiz/$topicId")
+                    navController.navigate(Screen.Quiz.createRoute(topicId))
                 },
                 onNavigateToRanking = {
-                    navController.navigate("ranking")
+                    navController.navigate(Screen.Ranking.route)
                 },
                 onNavigateToWrongAnswer = {
-                    navController.navigate("wrong_answer")
+                    navController.navigate(Screen.WrongAnswer.route)
                 }
             )
         }
 
         // 퀴즈 화면
         composable(
-            route = "quiz/{topicId}",
+            route = Screen.Quiz.route,
             arguments = listOf(navArgument("topicId") { type = NavType.IntType })
         ) {
             QuizScreen(
                 onNavigateToResult = { score, totalQuestions ->
-                    navController.navigate("result/$score/$totalQuestions") {
-                        popUpTo("main")
+                    navController.navigate(Screen.Result.createRoute(score, totalQuestions)) {
+                        popUpTo(Screen.Main.route)
                     }
                 }
             )
@@ -66,7 +84,7 @@ fun AppNavigation(
 
         // 결과 화면
         composable(
-            route = "result/{score}/{totalQuestions}",
+            route = Screen.Result.route,
             arguments = listOf(
                 navArgument("score") { type = NavType.IntType },
                 navArgument("totalQuestions") { type = NavType.IntType }
@@ -79,20 +97,20 @@ fun AppNavigation(
                 score = score,
                 totalQuestions = totalQuestions,
                 onNavigateToMain = {
-                    navController.navigate("main") {
-                        popUpTo("main")
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Main.route)
                     }
                 }
             )
         }
 
         // 랭킹 화면
-        composable("ranking") {
+        composable(Screen.Ranking.route) {
             RankingScreen()
         }
 
         // 오답 노트 화면
-        composable("wrong_answer") {
+        composable(Screen.WrongAnswer.route) {
             WrongAnswerScreen()
         }
     }
