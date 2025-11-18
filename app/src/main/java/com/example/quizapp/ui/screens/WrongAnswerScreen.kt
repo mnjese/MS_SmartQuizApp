@@ -30,10 +30,10 @@ import com.example.quizapp.data.model.WrongAnswer
 import com.example.quizapp.viewmodel.WrongAnswerViewModel
 
 /**
- * DB에 저장된 틀린 문제 목록(오답 노트)을 표시하는 화면 Composable.
- * 각 항목에는 삭제 기능이 포함되어 있습니다.
+ * 저장된 오답 문제 목록을 보여주는 화면.
+ * 각 항목은 삭제할 수 있습니다.
  *
- * @param viewModel 오답 데이터 로드 및 삭제 로직을 관리하는 [WrongAnswerViewModel].
+ * @param viewModel 오답 목록과 삭제 기능을 관리하는 ViewModel
  */
 @Composable
 fun WrongAnswerScreen(
@@ -81,10 +81,10 @@ fun WrongAnswerScreen(
 }
 
 /**
- * 오답 목록의 각 문제를 카드 형태로 표시하는 Composable.
+ * 오답 문제 하나를 카드 형태로 표시합니다.
  *
- * @param item 표시할 오답 데이터 [WrongAnswer].
- * @param onDeleteClick 삭제 버튼 클릭 시 호출될 람다.
+ * @param item 오답 데이터
+ * @param onDeleteClick 삭제 버튼 클릭 시 호출되는 콜백
  */
 @Composable
 fun WrongAnswerItemCard(item: WrongAnswer, onDeleteClick: () -> Unit) {

@@ -13,12 +13,12 @@ import com.example.quizapp.data.DummyData
 import com.example.quizapp.data.model.QuizTopic
 
 /**
- * 앱의 메인 화면 Composable.
- * 퀴즈 주제 선택, 랭킹/오답노트 화면으로의 탐색을 담당합니다.
+ * 앱의 메인 화면.
+ * - 퀴즈 주제를 선택하고 퀴즈/랭킹/오답 노트 화면으로 이동합니다.
  *
- * @param onNavigateToQuiz 퀴즈 화면으로 이동을 요청하는 람다. 선택된 주제 ID(Int)를 전달합니다.
- * @param onNavigateToRanking 랭킹 화면으로 이동을 요청하는 람다.
- * @param onNavigateToWrongAnswer 오답 노트 화면으로 이동을 요청하는 람다.
+ * @param onNavigateToQuiz 선택된 주제 ID와 함께 퀴즈 화면으로 이동하는 콜백
+ * @param onNavigateToRanking 랭킹 화면으로 이동하는 콜백
+ * @param onNavigateToWrongAnswer 오답 노트 화면으로 이동하는 콜백
  */
 @OptIn(ExperimentalMaterial3Api::class) // Card의 onClick을 사용하기 위해 필요
 @Composable
@@ -117,11 +117,11 @@ fun MainScreen(
 }
 
 /**
- * 퀴즈 주제 하나를 표시하는 재사용 가능한 카드 Composable.
+ * 퀴즈 주제를 표시하는 카드.
  *
- * @param topic 표시할 퀴즈 주제 데이터
- * @param isSelected 이 카드가 현재 선택되었는지 여부
- * @param onClick 카드가 클릭되었을 때 호출될 람다
+ * @param topic 표시할 주제 정보
+ * @param isSelected 현재 선택된 카드인지 여부
+ * @param onClick 카드 클릭 시 실행되는 콜백
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

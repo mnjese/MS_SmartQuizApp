@@ -34,10 +34,9 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * 퀴즈 랭킹을 표시하는 화면 Composable.
- * ViewModel로부터 랭킹 데이터를 받아 주제별로 필터링하여 목록으로 보여줍니다.
+ * 저장된 퀴즈 기록을 주제별로 필터링하여 랭킹 형태로 보여주는 화면.
  *
- * @param viewModel 랭킹 데이터 로드 및 필터링 로직을 관리하는 [RankingViewModel].
+ * @param viewModel 랭킹 데이터와 필터 상태를 관리하는 ViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class) // FilterChip을 사용하기 위해 필요
 @Composable
@@ -108,11 +107,12 @@ fun RankingScreen(
     }
 }
 
+
 /**
- * 랭킹 목록의 각 항목을 표시하는 재사용 가능한 카드 Composable.
+ * 하나의 랭킹 항목을 카드 형태로 표시합니다.
  *
- * @param rank 등수 (1부터 시작).
- * @param item 표시할 랭킹 데이터 [RankingItem].
+ * @param rank 등수 (1부터 시작)
+ * @param item 표시할 랭킹 데이터
  */
 @Composable
 fun RankingItemCard(rank: Int, item: RankingItem) {

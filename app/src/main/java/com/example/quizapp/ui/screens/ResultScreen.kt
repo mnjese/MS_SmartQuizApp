@@ -19,13 +19,12 @@ import com.example.quizapp.data.model.Question
 import com.example.quizapp.viewmodel.ResultViewModel
 
 /**
- * 퀴즈가 끝난 후 상세 결과를 보여주는 화면 Composable.
- * 점수 요약, 예상 랭킹, 풀었던 모든 문제 목록을 표시합니다.
+ * 퀴즈 종료 후 점수 요약, 예상 랭킹, 문제별 정오답을 표시하는 화면.
  *
- * @param score 최종 맞힌 개수 (점수).
- * @param totalQuestions 전체 문제 개수.
- * @param onNavigateToMain 메인 화면으로 돌아가기 버튼 클릭 시 호출될 람다.
- * @param viewModel 랭킹 목록을 불러와 예상 순위를 계산하기 위한 [ResultViewModel].
+ * @param score 맞힌 문제 수
+ * @param totalQuestions 전체 문제 수
+ * @param onNavigateToMain 메인 화면으로 돌아가는 콜백
+ * @param viewModel 랭킹 목록을 조회하는 ViewModel
  */
 @Composable
 fun ResultScreen(
@@ -133,11 +132,11 @@ fun ResultScreen(
 }
 
 /**
- * 결과 화면에서 풀었던 문제 하나하나를 표시하는 재사용 가능한 카드 Composable.
+ * 문제 하나의 정답/오답 여부와 옵션을 표시하는 카드.
  *
- * @param question 표시할 문제 데이터 [Question].
- * @param selectedIndex 사용자가 이 문제에 대해 선택했던 답안 인덱스 (선택 안함 = null).
- * @param isCorrect 사용자가 이 문제를 맞혔는지 여부.
+ * @param question 문제 정보
+ * @param selectedIndex 사용자가 선택한 보기 인덱스
+ * @param isCorrect 정답 여부
  */
 @Composable
 fun ResultQuestionItem(

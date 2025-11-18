@@ -3,14 +3,22 @@ package com.example.quizapp.data
 import com.example.quizapp.data.model.Question
 import com.example.quizapp.data.model.QuizTopic
 
+/**
+ * 앱에서 사용할 샘플 퀴즈 데이터 모음.
+ *
+ * - 실제 DB나 API를 사용하기 전 테스트용으로 활용됩니다.
+ * - 주제 목록과 문제 목록을 제공합니다.
+ */
 object DummyData {
 
+    /** 제공되는 퀴즈 주제 목록 */
     val topics = listOf(
         QuizTopic(1, "일반 상식"),
         QuizTopic(2, "과학"),
         QuizTopic(3, "영화")
     )
 
+    /** 전체 퀴즈 문제 목록 */
     val questions = listOf(
         // --- 일반 상식 (topicId = 1) ---
         Question(
@@ -26,22 +34,6 @@ object DummyData {
             options = listOf("K2", "한라산", "에베레스트", "백두산"),
             correctAnswerIndex = 2,
             topicId = 1
-        ),
-
-        // --- 과학 (topicId = 2) ---
-        Question(
-            id = 201,
-            questionText = "물 분자를 이루는 원소 기호는?",
-            options = listOf("CO2", "O2", "H2O2", "H2O"),
-            correctAnswerIndex = 3,
-            topicId = 2
-        ),
-        Question(
-            id = 202,
-            questionText = "태양계의 중심 천체는?",
-            options = listOf("지구", "태양", "화성", "목성"),
-            correctAnswerIndex = 1,
-            topicId = 2
         ),
         Question(
             id = 103,
@@ -77,6 +69,22 @@ object DummyData {
             options = listOf("피카소", "반 고흐", "레오나르도 다 빈치", "미켈란젤로"),
             correctAnswerIndex = 2,
             topicId = 1
+        ),
+
+        // --- 과학 (topicId = 2) ---
+        Question(
+            id = 201,
+            questionText = "물 분자를 이루는 원소 기호는?",
+            options = listOf("CO2", "O2", "H2O2", "H2O"),
+            correctAnswerIndex = 3,
+            topicId = 2
+        ),
+        Question(
+            id = 202,
+            questionText = "태양계의 중심 천체는?",
+            options = listOf("지구", "태양", "화성", "목성"),
+            correctAnswerIndex = 1,
+            topicId = 2
         ),
         Question(
             id = 203,
@@ -167,7 +175,12 @@ object DummyData {
 
     )
 
-    // 특정 주제의 문제만 가져오는 함수 (나중에 ViewModel에서 사용)
+    /**
+     * 특정 주제에 속한 문제 목록을 반환합니다.
+     *
+     * @param topicId 주제 ID (1=일반, 2=과학, 3=영화)
+     * @return 해당 topicId를 가진 [Question] 리스트
+     */
     fun getQuestionsForTopic(topicId: Int): List<Question> {
         return questions.filter { it.topicId == topicId }
     }

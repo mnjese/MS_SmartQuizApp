@@ -20,12 +20,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizapp.viewmodel.QuizViewModel
 
 /**
- * 퀴즈 문제를 풀이하는 화면 Composable.
- * ViewModel로부터 현재 문제 상태를 받아 표시하고, 사용자 입력을 ViewModel로 전달합니다.
+ * 퀴즈 문제를 풀 수 있는 화면.
+ * 현재 문제, 보기 선택, 다음 버튼을 제공하며 퀴즈 종료 시 결과 화면으로 이동합니다.
  *
- * @param onNavigateToResult 퀴즈가 모두 종료되었을 때 호출되는 람다.
- * 최종 점수(맞힌 개수)와 총 문제 개수를 전달합니다.
- * @param viewModel 퀴즈 로직과 상태를 관리하는 [QuizViewModel].
+ * @param onNavigateToResult 최종 점수와 총 문제 수를 전달하며 결과 화면으로 이동하는 콜백
+ * @param viewModel 퀴즈 로직과 상태를 관리하는 ViewModel
  */
 @Composable
 fun QuizScreen(
