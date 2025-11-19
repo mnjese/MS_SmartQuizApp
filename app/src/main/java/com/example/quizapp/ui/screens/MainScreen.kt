@@ -1,6 +1,5 @@
 package com.example.quizapp.ui.screens
 
-import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -16,6 +15,7 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Quiz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -335,7 +335,7 @@ fun HeaderSection(infiniteTransition: InfiniteTransition) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Quiz,
+                imageVector = Icons.Outlined.Quiz,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = androidx.compose.ui.graphics.Color.White
