@@ -11,7 +11,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Star
@@ -23,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +59,7 @@ fun MainScreen(
     onExit: () -> Unit
 ) {
     var showExitDialog: Boolean by remember { mutableStateOf(false) }
+    var menuExpanded: Boolean by remember { mutableStateOf(false) }
 
     // DB에서 통계 데이터 가져오기
     val context = LocalContext.current
@@ -100,138 +105,176 @@ fun MainScreen(
     // 애니메이션
     val infiniteTransition = rememberInfiniteTransition(label = "main")
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // 배경 장식 원들
-        FloatingCircles(infiniteTransition)
+    // 상단 앱바 + 내용 영역을 위한 Scaffold
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {},
+                actions = {
+                    // 우측 ⋮ 메뉴
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "메뉴"
+                        )
+                    }
 
-        Column(
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("앱 종료") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                showExitDialog = true
+                            }
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            // 배경 장식 원들
+            FloatingCircles(infiniteTransition)
 
-            // 헤더 섹션
-            HeaderSection(infiniteTransition)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 통계 카드 섹션
-            StatisticsSection(
-                totalGames = totalGames,
-                averageScore = averageScore,
-                wrongCount = wrongAnswers.size
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // 주제 선택 섹션
-            Text(
-                text = "📚 주제를 선택하세요",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            )
-
-            topics.forEach { topic ->
-                val isSelected = (topic.id == selectedTopicId)
-                TopicCard(
-                    topic = topic,
-                    isSelected = isSelected,
-                    onClick = {
-                        selectedTopicId = if (selectedTopicId == topic.id) null else topic.id
-                    }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 퀴즈 시작 버튼
-            AnimatedVisibility(
-                visible = (selectedTopicId != null),
-                enter = fadeIn() + expandVertically() + scaleIn(),
-                exit = fadeOut() + shrinkVertically() + scaleOut()
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
-                    onClick = {
-                        selectedTopicId?.let { id ->
-                            onNavigateToQuiz(id)
-                        }
-                    },
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 헤더 섹션
+                HeaderSection(infiniteTransition)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 통계 카드 섹션
+                StatisticsSection(
+                    totalGames = totalGames,
+                    averageScore = averageScore,
+                    wrongCount = wrongAnswers.size
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // 주제 선택 섹션
+                Text(
+                    text = "📚 주제를 선택하세요",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Quiz,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "퀴즈 시작하기",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
-            }
+                        .padding(bottom = 12.dp)
+                )
 
-            if (selectedTopicId != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 하단 버튼들
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onNavigateToRanking,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.EmojiEvents,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                topics.forEach { topic ->
+                    val isSelected = (topic.id == selectedTopicId)
+                    TopicCard(
+                        topic = topic,
+                        isSelected = isSelected,
+                        onClick = {
+                            selectedTopicId = if (selectedTopicId == topic.id) null else topic.id
+                        }
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("랭킹")
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                OutlinedButton(
-                    onClick = onNavigateToWrongAnswer,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Psychology,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("오답노트")
-                }
-            }
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
+                // 퀴즈 시작 버튼
+                AnimatedVisibility(
+                    visible = (selectedTopicId != null),
+                    enter = fadeIn() + expandVertically() + scaleIn(),
+                    exit = fadeOut() + shrinkVertically() + scaleOut()
+                ) {
+                    Button(
+                        onClick = {
+                            selectedTopicId?.let { id ->
+                                onNavigateToQuiz(id)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Quiz,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "퀴즈 시작하기",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+                if (selectedTopicId != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // 하단 버튼들
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onNavigateToRanking,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("랭킹")
+                    }
+
+                    OutlinedButton(
+                        onClick = onNavigateToWrongAnswer,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Psychology,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("오답노트")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+            }
         }
     }
 }
@@ -322,43 +365,73 @@ fun HeaderSection(infiniteTransition: InfiniteTransition) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 아이콘
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(GradientStart, GradientEnd)
-                    )
-                ),
-            contentAlignment = Alignment.Center
+        // 아이콘 + 텍스트 로고 영역
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Quiz,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = androidx.compose.ui.graphics.Color.White
-            )
+            // 아이콘
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(GradientStart, GradientEnd)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Quiz,
+                    contentDescription = null,
+                    modifier = Modifier.size(34.dp),
+                    tint = androidx.compose.ui.graphics.Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.width(20.dp))
+
+            // 텍스트 로고
+            Column {
+                Text(
+                    text = "스마트 퀴즈",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.5.sp,
+                        shadow = androidx.compose.ui.graphics.Shadow(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            offset = Offset(0f, 4f),
+                            blurRadius = 10f
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.scale(titleScale)
+                )
+
+                // 보조 영문 타이틀
+                Text(
+                    text = "Smart Quiz",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "스마트 퀴즈",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.scale(titleScale)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "지식을 테스트하고 실력을 향상시키세요!",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            ),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
 }
@@ -408,10 +481,14 @@ fun StatCard(
     label: String
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.shadow(
+            elevation = 2.dp,
+            shape = RoundedCornerShape(16.dp),
+            clip = false
+        ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column(
