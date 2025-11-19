@@ -1,12 +1,16 @@
 package com.example.quizapp.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,15 +22,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizapp.data.model.RankingItem
 import com.example.quizapp.viewmodel.RankingViewModel
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -98,7 +109,23 @@ fun RankingScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(rankingList) { index, item ->
-                        RankingItemCard(rank = index + 1, item = item)
+                        // 아이템 등장 애니메이션
+                        var visible by remember { mutableStateOf(false) }
+                        LaunchedEffect(item) {
+                            delay(index * 50L)
+                            visible = true
+                        }
+
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(animationSpec = tween(300)) +
+                                    slideInHorizontally(
+                                        animationSpec = tween(300),
+                                        initialOffsetX = { it / 2 }
+                                    )
+                        ) {
+                            RankingItemCard(rank = index + 1, item = item)
+                        }
                     }
                 }
             }
@@ -117,9 +144,29 @@ fun RankingItemCard(
     rank: Int,
     item: RankingItem
 ) {
+    // 1~3위에 대한 특별 색상
+    val medalColor = when (rank) {
+        1 -> Color(0xFFFFD700) // 금색
+        2 -> Color(0xFFC0C0C0) // 은색
+        3 -> Color(0xFFCD7F32) // 동색
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val isTopThree = rank <= 3
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTopThree) 6.dp else 2.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isTopThree) {
+                MaterialTheme.colorScheme.surface
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        )
     ) {
         Row(
             modifier = Modifier
@@ -128,21 +175,38 @@ fun RankingItemCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // 등수
-            Text(
-                text = "$rank.",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+            // 등수 (메달 아이콘 포함)
+            Box(
+                modifier = Modifier.width(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isTopThree) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "$rank 위",
+                        tint = medalColor,
+                        modifier = Modifier.size(32.dp)
+                    )
+                } else {
+                    Text(
+                        text = "$rank",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // 점수 / 주제 / 날짜
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "점수: ${item.score} / ${item.totalQuestions}",
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = item.topicName,
                     style = MaterialTheme.typography.bodyMedium,
@@ -155,6 +219,22 @@ fun RankingItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            // 정답률 표시
+            val percentage = if (item.totalQuestions > 0) {
+                (item.score * 100 / item.totalQuestions)
+            } else 0
+
+            Text(
+                text = "$percentage%",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = when {
+                    percentage >= 80 -> Color(0xFF4CAF50)
+                    percentage >= 60 -> Color(0xFFFFA726)
+                    else -> Color(0xFFE53935)
+                }
+            )
         }
     }
 }
