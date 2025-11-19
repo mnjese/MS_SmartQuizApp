@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -88,17 +89,32 @@ fun QuizScreen(
 
                 // 진행도 + 문제 텍스트
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "${uiState.currentQuestionIndex + 1} / ${uiState.totalQuestions}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    // 진행 표시 바
+                    LinearProgressIndicator(
+                        progress = { (uiState.currentQuestionIndex + 1).toFloat() / uiState.totalQuestions },
                         modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(bottom = 8.dp)
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "문제 ${uiState.currentQuestionIndex + 1} / ${uiState.totalQuestions}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.align(Alignment.End)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Text(
                         text = currentQuestion.questionText,
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
                 }
