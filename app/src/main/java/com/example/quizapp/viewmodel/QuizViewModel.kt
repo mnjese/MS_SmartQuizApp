@@ -11,6 +11,7 @@ import com.example.quizapp.data.local.QuizDao
 import com.example.quizapp.data.model.Question
 import com.example.quizapp.data.model.RankingItem
 import com.example.quizapp.data.model.WrongAnswer
+import com.example.quizapp.util.SoundManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,6 +59,9 @@ class QuizViewModel(
 
     /** 퀴즈 관련 DB 작업을 수행할 DAO */
     private val quizDao: QuizDao = AppDatabase.getDatabase(application).quizDao()
+
+    /** 효과음 재생을 위한 SoundManager */
+    private val soundManager: SoundManager = SoundManager.getInstance(application)
 
     /** 내부에서만 변경 가능한 UI 상태 Flow */
     private val _uiState = MutableStateFlow(QuizUiState())
@@ -127,6 +131,14 @@ class QuizViewModel(
 
         // 정답 여부 판단
         val isCorrect = (currentQuestion.correctAnswerIndex == selectedIndex)
+
+        // 정답/오답 효과음 재생
+        if (isCorrect) {
+            soundManager.playCorrectSound()
+        } else {
+            soundManager.playWrongSound()
+        }
+
         // 맞았으면 점수 +1
         val newScore = if (isCorrect) currentState.score + 1 else currentState.score
         // 틀렸을 경우만 오답 목록에 추가
