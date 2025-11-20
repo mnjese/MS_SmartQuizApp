@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.example.quizapp.ui.screens
 
 import androidx.activity.compose.BackHandler
