@@ -8,13 +8,13 @@
 
 - 퀴즈 주제 선택 (일반 상식 / 과학 / 영화)
 - 4지선다 퀴즈 풀이
+- 정답/오답 시 사운드 재생
 - 점수 계산 및 정답/오답 표시
-- 결과 화면에서 정오답 상세 확인
+- 결과 화면에서 정답/오답 상세 확인
 - 랭킹 저장 및 조회 (Room DB)
 - 오답 노트 저장, 조회 및 삭제 기능
 - Compose Navigation으로 화면 전환
 - 뒤로가기 UX (종료 확인, 단순 뒤로가기)
-
 ---
 
 ## 아키텍처 개요
@@ -54,17 +54,15 @@ app/
 ---
 
 ## Todo
-- [] 사운드 기능 추가하기
-- [] 디자인 마무리
+- 디자인 마무리
 
 ---
 
 ## Todo-Optional
 - 기타 개선사항
-- [] Repository 레이어 추가해 ViewModel-DB 구조 더 깔끔하게 만들기
-- [] QuestionDataSource 인터페이스로 DummyData 추상화
-- [] 단위 테스트(ViewModel 중심) 도입
-- [] UI 컴포넌트 컴포즈 Preview 강화
-- [] 다크모드 색상 세분화
+- Repository 레이어 추가해 ViewModel-DB 구조 더 깔끔하게 만들기
+- QuestionDataSource 인터페이스로 DummyData 추상화
+- 단위 테스트(ViewModel 중심) 도입
+- UI 컴포넌트 컴포즈 Preview 강화
 
 ---

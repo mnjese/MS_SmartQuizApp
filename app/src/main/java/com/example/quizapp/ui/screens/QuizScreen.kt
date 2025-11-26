@@ -16,7 +16,6 @@ import com.example.quizapp.viewmodel.QuizViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 
 /**
  * 퀴즈 문제를 풀 수 있는 화면.
